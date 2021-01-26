@@ -3,8 +3,10 @@ package com.batch.example.job;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,19 +19,21 @@ import lombok.extern.slf4j.Slf4j;
 public class SimpleJobConfiguration {
     private final JobBuilderFactory jobBuilderFactory; 
     private final StepBuilderFactory stepBuilderFactory;
-
+    
     @Bean
-    public Job simpleJob() {
-        return jobBuilderFactory.get("simpleJob")
-                .start(simpleStep1())
+    public Job job() {
+        return jobBuilderFactory.get("job")
+                .start(step1(null))
                 .build();
     }
 
     @Bean
-    public Step simpleStep1() {
-        return stepBuilderFactory.get("simpleStep1")
+    @JobScope
+    public Step step1(@Value("#{jobParameters[date]}") String date) {
+        return stepBuilderFactory.get("step1")
                 .tasklet((contribution, chunkContext) -> {
                     log.info(">>>>> This is Step1");
+                    log.info(">>>>> date = {}", date);
                     return RepeatStatus.FINISHED;
                 })
                 .build();
